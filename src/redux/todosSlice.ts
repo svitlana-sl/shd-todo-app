@@ -5,7 +5,7 @@ export interface Todo {
   text: string;
   category: string;
   completed: boolean;
-  description: string;
+  description?: string;
 }
 
 interface TodosState {
@@ -45,13 +45,21 @@ const todosSlice = createSlice({
     },
     updateTodo: (
       state,
-      action: PayloadAction<{ id: number; text?: string; category?: string }>,
+      action: PayloadAction<{
+        id: number;
+        text?: string;
+        category?: string;
+        completed?: boolean;
+        description?: string;
+      }>,
     ) => {
-      const { id, text, category } = action.payload;
+      const { id, text, category, completed, description } = action.payload;
       const todo = state.todos.find((todo) => todo.id === id);
       if (todo) {
         if (text !== undefined) todo.text = text;
         if (category !== undefined) todo.category = category;
+        if (completed !== undefined) todo.completed = completed;
+        if (description !== undefined) todo.description = description;
       }
     },
     clearTodos: (state) => {
