@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import { fetchTodos } from "../redux/todosSlice";
+import { Badge } from "@/components/ui/badge";
 
 const TodoList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -22,7 +23,7 @@ const TodoList: React.FC = () => {
       {todos.map((todo) => (
         <div key={todo.id} className="border-b p-2">
           <span>{todo.text}</span>
-          <span className="ml-2 text-sm text-gray-500">{todo.category}</span>
+          <Badge variant="outline">{todo.category}</Badge>
         </div>
       ))}
     </div>
