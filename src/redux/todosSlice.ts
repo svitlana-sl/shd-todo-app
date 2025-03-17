@@ -1,13 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
-// ✅ Тип даних Todo
 export interface Todo {
   id: number;
   text: string;
   category: string;
+  completed: boolean;
+  description: string;
 }
 
-// ✅ Стан Redux
 interface TodosState {
   todos: Todo[];
   loading: boolean;
@@ -20,12 +20,11 @@ const initialState: TodosState = {
   error: null,
 };
 
-// ✅ **Асинхронний екшн для отримання TODOs з JSON-сервера**
 export const fetchTodos = createAsyncThunk<Todo[]>(
   "todos/fetchTodos",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:5000/todos"); // Адреса `json-server`
+      const response = await fetch("http://localhost:5000/todos");
       if (!response.ok) throw new Error("Failed to fetch todos");
       return await response.json();
     } catch (error) {
