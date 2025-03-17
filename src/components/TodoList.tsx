@@ -11,11 +11,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Card } from "@/components/ui/card";
-import { Pencil, Trash } from "lucide-react";
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { Pencil, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectItem } from "@/components/ui/select";
 import { toast, Toaster } from "sonner";
 
 interface Category {
@@ -31,6 +29,8 @@ const TodoList: React.FC = () => {
   );
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   useEffect(() => {
     dispatch(fetchTodos());
@@ -43,6 +43,8 @@ const TodoList: React.FC = () => {
 
   const handleEditTodo = (todo: Todo) => {
     setEditingTodo(todo);
+    setEditText(todo.text);
+    setEditDescription(todo.description || "");
   };
 
   const handleSaveTodo = () => {
@@ -50,10 +52,10 @@ const TodoList: React.FC = () => {
       dispatch(
         updateTodo({
           id: editingTodo.id,
-          text: editingTodo.text,
+          text: editText,
           category: editingTodo.category,
           completed: editingTodo.completed,
-          description: editingTodo.description,
+          description: editDescription,
         }),
       );
       toast.success("Todo updated successfully");
@@ -85,11 +87,27 @@ const TodoList: React.FC = () => {
                     )
                   }
                 />
-                <span
-                  className={`text-lg ${todo.completed ? "text-muted-foreground line-through" : ""}`}
-                >
-                  {todo.text}
-                </span>
+                {editingTodo?.id === todo.id ? (
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      placeholder="Todo text"
+                    />
+                    <Textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      placeholder="Description"
+                    />
+                    <Button onClick={handleSaveTodo}>Save</Button>
+                  </div>
+                ) : (
+                  <span
+                    className={`text-lg ${todo.completed ? "text-muted-foreground line-through" : ""}`}
+                  >
+                    {todo.text}
+                  </span>
+                )}
                 {/* Category */}
                 {category && (
                   <Badge
@@ -103,64 +121,22 @@ const TodoList: React.FC = () => {
 
               {/* Edit and delete buttons */}
               <div className="flex gap-2">
-                <Dialog
-                  open={!!editingTodo}
-                  onOpenChange={() => setEditingTodo(null)}
-                >
-                  <DialogTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => handleEditTodo(todo)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <Input
-                      value={editingTodo?.text || ""}
-                      onChange={(e) =>
-                        setEditingTodo({
-                          ...editingTodo!,
-                          text: e.target.value,
-                        })
-                      }
-                      placeholder="Todo text"
-                    />
-                    <Textarea
-                      value={editingTodo?.description || ""}
-                      onChange={(e) =>
-                        setEditingTodo({
-                          ...editingTodo!,
-                          description: e.target.value,
-                        })
-                      }
-                      placeholder="Description"
-                    />
-                    <Select
-                      value={editingTodo?.category || ""}
-                      onValueChange={(value) =>
-                        setEditingTodo({ ...editingTodo!, category: value })
-                      }
-                    >
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                    <Button onClick={handleSaveTodo}>Save</Button>
-                  </DialogContent>
-                </Dialog>
                 <Button
                   size="icon"
-                  variant="destructive"
+                  variant="outline"
+                  onClick={() => handleEditTodo(todo)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="outline"
                   onClick={() => {
                     dispatch(removeTodo(todo.id));
                     toast.success("Todo deleted successfully");
                   }}
                 >
-                  <Trash className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>

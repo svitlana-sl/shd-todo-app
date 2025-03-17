@@ -65,6 +65,21 @@ const todosSlice = createSlice({
     clearTodos: (state) => {
       state.todos = [];
     },
+    editTodo: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        text?: string;
+        description?: string;
+      }>,
+    ) => {
+      const { id, text, description } = action.payload;
+      const todo = state.todos.find((todo) => todo.id === id);
+      if (todo) {
+        if (text !== undefined) todo.text = text;
+        if (description !== undefined) todo.description = description;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -83,6 +98,6 @@ const todosSlice = createSlice({
   },
 });
 
-export const { addTodo, removeTodo, updateTodo, clearTodos } =
+export const { addTodo, removeTodo, updateTodo, clearTodos, editTodo } =
   todosSlice.actions;
 export default todosSlice.reducer;
