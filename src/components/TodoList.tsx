@@ -42,6 +42,7 @@ import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
+  AccordionContent,
 } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -196,7 +197,7 @@ const TodoList: React.FC = () => {
                     }
                   />
                   <span
-                    className={`flex-grow text-lg ${todo.completed ? "text-muted-foreground text-stroke line-through" : ""}`}
+                    className={`flex-grow text-lg ${todo.completed ? "text-muted-foreground line-through" : ""}`}
                   >
                     {todo.text}
                   </span>
@@ -210,9 +211,7 @@ const TodoList: React.FC = () => {
                     </Badge>
                   )}
 
-                  <AccordionTrigger className="cursor-pointer px-2 py-1">
-                    ▼
-                  </AccordionTrigger>
+                  <AccordionTrigger className="cursor-pointer px-2 py-1" />
                 </div>
 
                 <div className="flex gap-2">
@@ -232,6 +231,15 @@ const TodoList: React.FC = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* AccordionContent to show description */}
+              <AccordionContent>
+                <div className="mt-2">
+                  <p className="text-gray-700">
+                    {todo.description || "No description"}
+                  </p>
+                </div>
+              </AccordionContent>
             </AccordionItem>
           );
         })}
