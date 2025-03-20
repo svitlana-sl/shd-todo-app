@@ -20,7 +20,7 @@ const initialState: TodosState = {
   error: null,
 };
 
-// ✅ Fetch Todos from API
+// Fetch Todos from API
 export const fetchTodos = createAsyncThunk<Todo[]>(
   "todos/fetchTodos",
   async (_, { rejectWithValue }) => {
@@ -34,7 +34,7 @@ export const fetchTodos = createAsyncThunk<Todo[]>(
   },
 );
 
-// ✅ Create Todo (API)
+// Create Todo (API)
 export const createTodo = createAsyncThunk(
   "todos/createTodo",
   async (newTodo: Todo, { rejectWithValue }) => {
@@ -52,7 +52,7 @@ export const createTodo = createAsyncThunk(
   },
 );
 
-// ✅ Update Todo (API)
+// Update Todo (API)
 export const updateTodo = createAsyncThunk(
   "todos/updateTodo",
   async (updatedTodo: Todo, { rejectWithValue }) => {

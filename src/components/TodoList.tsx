@@ -71,6 +71,9 @@ const TodoList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [todosPerPage, setTodosPerPage] = useState(5);
 
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+
   useEffect(() => {
     dispatch(fetchTodos());
 
@@ -87,7 +90,7 @@ const TodoList: React.FC = () => {
     }
 
     const newTodoItem: Todo = {
-      id: Date.now(), // Temporary id; backend will typically return a permanent id
+      id: Date.now(), // Temporary id; backend will return a permanent id
       text: newTodo,
       category: selectedCategory,
       completed: false,
@@ -129,8 +132,23 @@ const TodoList: React.FC = () => {
   const indexOfLastTodo = currentPage * todosPerPage;
   const indexOfFirstTodo = indexOfLastTodo - todosPerPage;
 
-  // Reverse todos before slicing to always show latest first
-  const currentTodos = [...todos]
+  // Todo filtering
+  const filteredTodos = todos.filter((todo) => {
+    const matchesCategory =
+      filterCategory && filterCategory !== "all"
+        ? todo.category === filterCategory
+        : true;
+    const matchesStatus =
+      filterStatus && filterStatus !== "all"
+        ? filterStatus === "completed"
+          ? todo.completed
+          : !todo.completed
+        : true;
+    return matchesCategory && matchesStatus;
+  });
+
+  // Slice the filtered todos for pagination
+  const currentTodos = [...filteredTodos]
     .reverse()
     .slice(indexOfFirstTodo, indexOfLastTodo);
 
@@ -173,6 +191,41 @@ const TodoList: React.FC = () => {
         <Button onClick={handleAddTodo} className="bg-black text-white">
           + Add
         </Button>
+      </div>
+
+      <div className="flex justify-between gap-4">
+        {/* Filter by Category */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Filter by Category:</span>
+          <Select onValueChange={(value) => setFilterCategory(value)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Filter by Status */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Filter by Status:</span>
+          <Select onValueChange={(value) => setFilterStatus(value)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Display Todos */}
@@ -224,7 +277,7 @@ const TodoList: React.FC = () => {
                   </Button>
                   <Button
                     size="icon"
-                    variant="destructive"
+                    variant="outline"
                     onClick={() => dispatch(removeTodo(todo.id))}
                   >
                     <X className="h-4 w-4" />
