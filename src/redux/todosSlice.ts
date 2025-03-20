@@ -34,6 +34,24 @@ export const fetchTodos = createAsyncThunk<Todo[]>(
   },
 );
 
+// ✅ Create Todo (API)
+export const createTodo = createAsyncThunk(
+  "todos/createTodo",
+  async (newTodo: Todo, { rejectWithValue }) => {
+    try {
+      const response = await fetch("http://localhost:5000/todos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTodo),
+      });
+      if (!response.ok) throw new Error("Failed to create todo");
+      return await response.json();
+    } catch (error) {
+      return rejectWithValue((error as Error).message);
+    }
+  },
+);
+
 // ✅ Update Todo (API)
 export const updateTodo = createAsyncThunk(
   "todos/updateTodo",
@@ -47,12 +65,10 @@ export const updateTodo = createAsyncThunk(
           body: JSON.stringify(updatedTodo),
         },
       );
-
-      // if the PUT fails we reject (or fallback)
       if (!response.ok) throw new Error("Failed to update todo");
       return await response.json();
     } catch (error) {
-      // Fallback: simply return the updatedTodo locally so that extraReducers can update the slice.
+      // Fallback: return the updatedTodo locally
       return updatedTodo;
     }
   },
@@ -71,6 +87,7 @@ const todosSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // fetchTodos cases
       .addCase(fetchTodos.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -83,6 +100,11 @@ const todosSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
+      // createTodo fulfilled case
+      .addCase(createTodo.fulfilled, (state, action: PayloadAction<Todo>) => {
+        state.todos.push(action.payload);
+      })
+      // updateTodo fulfilled case
       .addCase(updateTodo.fulfilled, (state, action: PayloadAction<Todo>) => {
         const index = state.todos.findIndex(
           (todo) => todo.id === action.payload.id,

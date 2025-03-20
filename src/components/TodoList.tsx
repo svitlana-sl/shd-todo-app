@@ -12,6 +12,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
 import { Pencil, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast, Toaster } from "sonner";
@@ -34,6 +43,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Category {
   id: string;
@@ -47,7 +57,10 @@ const TodoList: React.FC = () => {
     (state: RootState) => state.todos,
   );
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   // State for adding a new todo
   const [newTodo, setNewTodo] = useState("");
@@ -90,13 +103,22 @@ const TodoList: React.FC = () => {
 
   const handleEditTodo = (todo: Todo) => {
     setEditingTodo(todo);
+    setEditText(todo.text);
+    setEditDescription(todo.description || "");
+    setIsModalOpen(true);
   };
 
   const handleSaveTodo = () => {
     if (editingTodo) {
-      dispatch(updateTodo(editingTodo));
+      dispatch(
+        updateTodo({
+          ...editingTodo,
+          text: editText,
+          description: editDescription,
+        }),
+      );
       toast.success("Todo updated successfully");
-      setEditingTodo(null);
+      setIsModalOpen(false);
     }
   };
 
@@ -269,6 +291,30 @@ const TodoList: React.FC = () => {
           % completed
         </span>
       </div>
+
+      {/* Edit Todo Dialog - triggers on pencil icon click */}
+      {editingTodo && (
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Todo</DialogTitle>
+            </DialogHeader>
+            <Input
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              placeholder="Todo Title"
+            />
+            <Textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder="Description"
+            />
+            <DialogFooter>
+              <Button onClick={handleSaveTodo}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Toaster />
     </div>

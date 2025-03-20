@@ -107,10 +107,10 @@
     },
     {
       "id": "48",
-      "text": "Read chapter of technical book",
+      "text": "Read chapter of fictional book",
       "completed": true,
       "category": "5",
-      "description": "Read a chapter from a technical book for knowledge gain"
+      "description": "Read a chapter from a fictional book for knowledge gain"
     }
   ],
   "categories": [
