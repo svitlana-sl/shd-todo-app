@@ -119,3 +119,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .text-stroke {
+    -webkit-text-stroke: 1px #888;
+    text-stroke: 1px #888;
+  }
+}

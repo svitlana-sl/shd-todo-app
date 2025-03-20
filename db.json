@@ -3,14 +3,14 @@
     {
       "id": "1",
       "text": "Learn React",
-      "completed": true,
+      "completed": false,
       "category": "1",
       "description": "Study the basics of React framework"
     },
     {
       "id": "2",
       "text": "Build a todo app",
-      "completed": false,
+      "completed": true,
       "category": "1",
       "description": "Develop a simple todo application using React"
     },
@@ -24,14 +24,14 @@
     {
       "id": "4",
       "text": "Read a book",
-      "completed": false,
+      "completed": true,
       "category": "4",
       "description": "Finish reading the current novel"
     },
     {
       "id": "5",
       "text": "Buy groceries",
-      "completed": false,
+      "completed": true,
       "category": "3",
       "description": "Purchase weekly groceries from the local store"
     },
@@ -45,7 +45,7 @@
     {
       "id": "7",
       "text": "Review project timeline",
-      "completed": true,
+      "completed": false,
       "category": "1",
       "description": "Go over the project timeline and ensure deadlines are met"
     },

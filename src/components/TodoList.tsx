@@ -5,16 +5,16 @@ import { Todo, fetchTodos, removeTodo, updateTodo } from "../redux/todosSlice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Card } from "@/components/ui/card";
 import { Pencil, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast, Toaster } from "sonner";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 interface Category {
   id: string;
@@ -29,8 +29,6 @@ const TodoList: React.FC = () => {
   );
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
-  const [editText, setEditText] = useState("");
-  const [editDescription, setEditDescription] = useState("");
 
   useEffect(() => {
     dispatch(fetchTodos());
@@ -43,21 +41,11 @@ const TodoList: React.FC = () => {
 
   const handleEditTodo = (todo: Todo) => {
     setEditingTodo(todo);
-    setEditText(todo.text);
-    setEditDescription(todo.description || "");
   };
 
   const handleSaveTodo = () => {
     if (editingTodo) {
-      dispatch(
-        updateTodo({
-          id: editingTodo.id,
-          text: editText,
-          category: editingTodo.category,
-          completed: editingTodo.completed,
-          description: editDescription,
-        }),
-      );
+      dispatch(updateTodo(editingTodo));
       toast.success("Todo updated successfully");
       setEditingTodo(null);
     }
@@ -70,93 +58,94 @@ const TodoList: React.FC = () => {
     return <p className="text-center text-gray-500">No todos found.</p>;
 
   return (
-    <div className="mt-4 space-y-2">
-      {todos.map((todo) => {
-        const category = categories.find((cat) => cat.id === todo.category);
+    <div className="mx-auto mt-4 w-[800px] space-y-2">
+      <Accordion type="single" collapsible>
+        {todos.map((todo) => {
+          const category = categories.find((cat) => cat.id === todo.category);
 
-        return (
-          <Card key={todo.id} className="flex flex-col gap-2 p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {/* Checkbox for completion */}
-                <Checkbox
-                  checked={todo.completed}
-                  onCheckedChange={() =>
-                    dispatch(
-                      updateTodo({ id: todo.id, completed: !todo.completed }),
-                    )
-                  }
-                />
+          return (
+            <AccordionItem
+              key={todo.id}
+              value={todo.id.toString()}
+              className="rounded-lg border p-4 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex w-full items-center gap-3">
+                  <Checkbox
+                    checked={todo.completed}
+                    onCheckedChange={() =>
+                      dispatch(
+                        updateTodo({ ...todo, completed: !todo.completed }),
+                      )
+                    }
+                  />
+                  <span
+                    className={`flex-grow text-lg ${todo.completed ? "text-muted-foreground text-stroke line-through" : ""}`}
+                  >
+                    {todo.text}
+                  </span>
+
+                  {category && (
+                    <Badge
+                      className="mr-2 ml-auto"
+                      style={{ backgroundColor: category.color }}
+                    >
+                      {category.name}
+                    </Badge>
+                  )}
+
+                  <AccordionTrigger className="cursor-pointer px-2 py-1"></AccordionTrigger>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => handleEditTodo(todo)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => {
+                      dispatch(removeTodo(todo.id));
+                      toast.success("Todo deleted successfully");
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <AccordionContent>
                 {editingTodo?.id === todo.id ? (
                   <div className="flex flex-col gap-2">
                     <Input
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      placeholder="Todo text"
+                      value={editingTodo.text}
+                      onChange={(e) =>
+                        setEditingTodo({ ...editingTodo, text: e.target.value })
+                      }
                     />
                     <Textarea
-                      value={editDescription}
-                      onChange={(e) => setEditDescription(e.target.value)}
-                      placeholder="Description"
+                      value={editingTodo.description}
+                      onChange={(e) =>
+                        setEditingTodo({
+                          ...editingTodo,
+                          description: e.target.value,
+                        })
+                      }
                     />
                     <Button onClick={handleSaveTodo}>Save</Button>
                   </div>
                 ) : (
-                  <span
-                    className={`text-lg ${todo.completed ? "text-muted-foreground line-through" : ""}`}
-                  >
-                    {todo.text}
-                  </span>
+                  <p className="mt-2 text-gray-700">{todo.description}</p>
                 )}
-                {/* Category */}
-                {category && (
-                  <Badge
-                    className="ml-2"
-                    style={{ backgroundColor: category.color }}
-                  >
-                    {category.name}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Edit and delete buttons */}
-              <div className="flex gap-2">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => handleEditTodo(todo)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => {
-                    dispatch(removeTodo(todo.id));
-                    toast.success("Todo deleted successfully");
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Collapsible for description */}
-            {todo.description && (
-              <>
-                <Collapsible>
-                  <CollapsibleTrigger className="text-muted-foreground cursor-pointer text-sm">
-                    Details...
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <p className="mt-2 text-gray-700">{todo.description}</p>
-                  </CollapsibleContent>
-                </Collapsible>
-              </>
-            )}
-          </Card>
-        );
-      })}
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
       <Toaster />
     </div>
   );
