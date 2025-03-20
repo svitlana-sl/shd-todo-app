@@ -7,13 +7,13 @@ import {
   removeTodo,
   updateTodo,
   addTodo,
+  createTodo,
 } from "../redux/todosSlice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast, Toaster } from "sonner";
 import {
   Select,
@@ -33,7 +33,6 @@ import {
   Accordion,
   AccordionItem,
   AccordionTrigger,
-  AccordionContent,
 } from "@/components/ui/accordion";
 
 interface Category {
@@ -74,13 +73,14 @@ const TodoList: React.FC = () => {
     }
 
     const newTodoItem: Todo = {
-      id: Date.now(), // Temporary ID before syncing with backend
+      id: Date.now(), // Temporary id; backend will typically return a permanent id
       text: newTodo,
       category: selectedCategory,
       completed: false,
     };
 
-    dispatch(addTodo(newTodoItem));
+    // Dispatch the async thunk for creating a new todo in the backend
+    dispatch(createTodo(newTodoItem));
     toast.success("Todo added successfully");
 
     // Reset fields after adding
@@ -215,26 +215,60 @@ const TodoList: React.FC = () => {
         })}
       </Accordion>
 
-      {/* Pagination Controls */}
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            Page {currentPage} of {totalPages}
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <div className="flex items-center justify-between">
+        {/* Show X per page select dropdown */}
+        <div className="flex items-center gap-2">
+          <span>Show:</span>
+          <Select onValueChange={(value) => setTodosPerPage(Number(value))}>
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder={`${todosPerPage} per page`} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5 per page</SelectItem>
+              <SelectItem value="10">10 per page</SelectItem>
+              <SelectItem value="15">15 per page</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Pagination Controls */}
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(currentPage - 1)}
+                isActive={currentPage !== 1}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              Page {currentPage} of {totalPages}
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(currentPage + 1)}
+                className={currentPage === totalPages ? "disabled" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+
+      {/* Stats */}
+      <div className="mt-4 flex justify-between text-sm text-gray-500">
+        <span>Total: {totalTodos} todos</span>
+        <span>
+          Active: {todos.filter((todo) => !todo.completed).length} todos
+        </span>
+        <span>
+          Completed: {todos.filter((todo) => todo.completed).length} todos
+        </span>
+        <span>
+          {Math.round(
+            (todos.filter((todo) => todo.completed).length / totalTodos) * 100,
+          )}{" "}
+          % completed
+        </span>
+      </div>
 
       <Toaster />
     </div>
