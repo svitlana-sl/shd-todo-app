@@ -1,14 +1,11 @@
-import { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../redux/store";
+import { useState } from "react";
+import { toast, Toaster } from "sonner";
 import {
-  Todo,
-  fetchTodos,
-  removeTodo,
-  updateTodo,
-  addTodo,
-  createTodo,
-} from "../redux/todosSlice";
+  useGetTodosQuery,
+  useCreateTodoMutation,
+  useUpdateTodoMutation,
+  useRemoveTodoMutation,
+} from "../redux/apiSlice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,10 +17,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
 import { Pencil, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { toast, Toaster } from "sonner";
 import {
   Select,
   SelectTrigger,
@@ -46,6 +41,7 @@ import {
 } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 
+// Define Category interface for type safety
 interface Category {
   id: string;
   name: string;
@@ -53,86 +49,100 @@ interface Category {
 }
 
 const TodoList: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { todos, loading, error } = useSelector(
-    (state: RootState) => state.todos,
-  );
+  // RTK Query: fetch todos
+  const { data: todos = [], isLoading, error } = useGetTodosQuery();
+  // RTK Query: create, update, and delete mutations
+  const [createTodo] = useCreateTodoMutation();
+  const [updateTodo] = useUpdateTodoMutation();
+  const [removeTodo] = useRemoveTodoMutation();
+
+  // Local state for categories, editing, pagination, filters, etc.
   const [categories, setCategories] = useState<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [editingTodo, setEditingTodo] = useState<any>(null);
   const [editText, setEditText] = useState("");
   const [editDescription, setEditDescription] = useState("");
-
-  // State for adding a new todo
   const [newTodo, setNewTodo] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
-
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [todosPerPage, setTodosPerPage] = useState(5);
-
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
-  useEffect(() => {
-    dispatch(fetchTodos());
-
-    fetch("http://localhost:5000/categories")
+  // Load categories from API on mount
+  // (This remains a local fetch since categories come from a different endpoint)
+  useState(() => {
+    fetch("https://locrian-sand-eyebrow.glitch.me/categories")
       .then((res) => res.json())
       .then((data) => setCategories(data))
       .catch((err) => console.error("Failed to fetch categories", err));
-  }, [dispatch]);
+  });
 
-  const handleAddTodo = () => {
+  // Handler for adding a new todo using RTK Query mutation
+  const handleAddTodo = async () => {
     if (!newTodo.trim() || !selectedCategory) {
       toast.error("Please enter a todo and select a category!");
       return;
     }
 
-    const newTodoItem: Todo = {
-      id: Date.now(), // Temporary id; backend will return a permanent id
+    const newTodoItem = {
+      // Temporary id is not needed — backend should assign one
       text: newTodo,
       category: selectedCategory,
       completed: false,
     };
 
-    // Dispatch the async thunk for creating a new todo in the backend
-    dispatch(createTodo(newTodoItem));
-    toast.success("Todo added successfully");
-
-    // Reset fields after adding
-    setNewTodo("");
-    setSelectedCategory("");
+    try {
+      await createTodo(newTodoItem).unwrap();
+      toast.success("Todo added successfully");
+      setNewTodo("");
+      setSelectedCategory("");
+    } catch (err) {
+      toast.error("Failed to add todo");
+    }
   };
 
-  const handleEditTodo = (todo: Todo) => {
+  // Handler for editing a todo
+  const handleEditTodo = (todo: any) => {
     setEditingTodo(todo);
     setEditText(todo.text);
     setEditDescription(todo.description || "");
     setIsModalOpen(true);
   };
 
-  const handleSaveTodo = () => {
+  // Handler for saving the edited todo using RTK Query mutation
+  const handleSaveTodo = async () => {
     if (editingTodo) {
-      dispatch(
-        updateTodo({
+      try {
+        await updateTodo({
           ...editingTodo,
           text: editText,
           description: editDescription,
-        }),
-      );
-      toast.success("Todo updated successfully");
-      setIsModalOpen(false);
+        }).unwrap();
+        toast.success("Todo updated successfully");
+        setIsModalOpen(false);
+      } catch (err) {
+        toast.error("Failed to update todo");
+      }
     }
   };
 
-  // Pagination logic
+  // Handler for deleting a todo
+  const handleDeleteTodo = async (id: number) => {
+    try {
+      await removeTodo(id).unwrap();
+      toast.success("Todo deleted successfully");
+    } catch (err) {
+      toast.error("Failed to delete todo");
+    }
+  };
+
+  // Pagination logic and filtering – similar to your existing implementation
   const totalTodos = todos.length;
   const totalPages = Math.ceil(totalTodos / todosPerPage);
   const indexOfLastTodo = currentPage * todosPerPage;
   const indexOfFirstTodo = indexOfLastTodo - todosPerPage;
 
-  // Todo filtering
   const filteredTodos = todos.filter((todo) => {
     const matchesCategory =
       filterCategory && filterCategory !== "all"
@@ -147,7 +157,6 @@ const TodoList: React.FC = () => {
     return matchesCategory && matchesStatus;
   });
 
-  // Slice the filtered todos for pagination
   const currentTodos = [...filteredTodos]
     .reverse()
     .slice(indexOfFirstTodo, indexOfLastTodo);
@@ -158,9 +167,10 @@ const TodoList: React.FC = () => {
     }
   };
 
-  if (loading)
+  if (isLoading)
     return <p className="text-center text-gray-500">Loading todos...</p>;
-  if (error) return <p className="text-center text-red-500">Error: {error}</p>;
+  if (error)
+    return <p className="text-center text-red-500">Error loading todos</p>;
   if (!todos.length)
     return <p className="text-center text-gray-500">No todos found.</p>;
 
@@ -174,7 +184,6 @@ const TodoList: React.FC = () => {
           placeholder="Add a new todo..."
           className="flex-grow"
         />
-
         <Select onValueChange={(value) => setSelectedCategory(value)}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Category" />
@@ -187,14 +196,13 @@ const TodoList: React.FC = () => {
             ))}
           </SelectContent>
         </Select>
-
         <Button onClick={handleAddTodo} className="bg-black text-white">
           + Add
         </Button>
       </div>
 
+      {/* Filter Dropdowns */}
       <div className="flex justify-between gap-4">
-        {/* Filter by Category */}
         <div className="flex items-center gap-2">
           <span className="text-sm">Filter by Category:</span>
           <Select onValueChange={(value) => setFilterCategory(value)}>
@@ -211,8 +219,6 @@ const TodoList: React.FC = () => {
             </SelectContent>
           </Select>
         </div>
-
-        {/* Filter by Status */}
         <div className="flex items-center gap-2">
           <span className="text-sm">Filter by Status:</span>
           <Select onValueChange={(value) => setFilterStatus(value)}>
@@ -228,11 +234,10 @@ const TodoList: React.FC = () => {
         </div>
       </div>
 
-      {/* Display Todos */}
+      {/* Display Todos in an Accordion */}
       <Accordion type="single" collapsible>
         {currentTodos.map((todo) => {
           const category = categories.find((cat) => cat.id === todo.category);
-
           return (
             <AccordionItem
               key={todo.id}
@@ -244,9 +249,7 @@ const TodoList: React.FC = () => {
                   <Checkbox
                     checked={todo.completed}
                     onCheckedChange={() =>
-                      dispatch(
-                        updateTodo({ ...todo, completed: !todo.completed }),
-                      )
+                      updateTodo({ ...todo, completed: !todo.completed })
                     }
                   />
                   <span
@@ -254,19 +257,13 @@ const TodoList: React.FC = () => {
                   >
                     {todo.text}
                   </span>
-
                   {category && (
-                    <Badge
-                      className="mr-2 ml-auto"
-                      style={{ backgroundColor: category.color }}
-                    >
+                    <Badge style={{ backgroundColor: category.color }}>
                       {category.name}
                     </Badge>
                   )}
-
                   <AccordionTrigger className="cursor-pointer px-2 py-1" />
                 </div>
-
                 <div className="flex gap-2">
                   <Button
                     size="icon"
@@ -278,14 +275,12 @@ const TodoList: React.FC = () => {
                   <Button
                     size="icon"
                     variant="outline"
-                    onClick={() => dispatch(removeTodo(todo.id))}
+                    onClick={() => handleDeleteTodo(todo.id)}
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-
-              {/* AccordionContent to show description */}
               <AccordionContent>
                 <div className="mt-2">
                   <p className="text-gray-700">
@@ -298,8 +293,8 @@ const TodoList: React.FC = () => {
         })}
       </Accordion>
 
+      {/* Pagination */}
       <div className="flex items-center justify-between">
-        {/* Show X per page select dropdown */}
         <div className="flex items-center gap-2">
           <span>Show:</span>
           <Select onValueChange={(value) => setTodosPerPage(Number(value))}>
@@ -313,8 +308,6 @@ const TodoList: React.FC = () => {
             </SelectContent>
           </Select>
         </div>
-
-        {/* Pagination Controls */}
         <Pagination>
           <PaginationContent>
             <PaginationItem>
@@ -336,24 +329,20 @@ const TodoList: React.FC = () => {
         </Pagination>
       </div>
 
-      {/* Stats */}
+      {/* Stats Section */}
       <div className="mt-4 flex justify-between text-sm text-gray-500">
         <span>Total: {totalTodos} todos</span>
-        <span>
-          Active: {todos.filter((todo) => !todo.completed).length} todos
-        </span>
-        <span>
-          Completed: {todos.filter((todo) => todo.completed).length} todos
-        </span>
+        <span>Active: {todos.filter((t) => !t.completed).length} todos</span>
+        <span>Completed: {todos.filter((t) => t.completed).length} todos</span>
         <span>
           {Math.round(
-            (todos.filter((todo) => todo.completed).length / totalTodos) * 100,
-          )}{" "}
+            (todos.filter((t) => t.completed).length / totalTodos) * 100,
+          )}
           % completed
         </span>
       </div>
 
-      {/* Edit Todo Dialog - triggers on pencil icon click */}
+      {/* Edit Todo Dialog */}
       {editingTodo && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent>
