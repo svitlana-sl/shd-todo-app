@@ -41,7 +41,6 @@ import {
 } from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 
-// Define Category interface for type safety
 interface Category {
   id: string;
   name: string;
@@ -49,14 +48,14 @@ interface Category {
 }
 
 const TodoList: React.FC = () => {
-  // RTK Query: fetch todos
+  // Fetch todos
   const { data: todos = [], isLoading, error } = useGetTodosQuery();
-  // RTK Query: create, update, and delete mutations
+  // Create, update, and delete mutations
   const [createTodo] = useCreateTodoMutation();
   const [updateTodo] = useUpdateTodoMutation();
   const [removeTodo] = useRemoveTodoMutation();
 
-  // Local state for categories, editing, pagination, filters, etc.
+  // Local state for categories, editing, pagination, filters, and modals
   const [categories, setCategories] = useState<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTodo, setEditingTodo] = useState<any>(null);
@@ -70,7 +69,6 @@ const TodoList: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
 
   // Load categories from API on mount
-  // (This remains a local fetch since categories come from a different endpoint)
   useState(() => {
     fetch("https://locrian-sand-eyebrow.glitch.me/categories")
       .then((res) => res.json())
@@ -78,7 +76,7 @@ const TodoList: React.FC = () => {
       .catch((err) => console.error("Failed to fetch categories", err));
   });
 
-  // Handler for adding a new todo using RTK Query mutation
+  // Handler for adding a new todo using mutation
   const handleAddTodo = async () => {
     if (!newTodo.trim() || !selectedCategory) {
       toast.error("Please enter a todo and select a category!");
@@ -110,7 +108,7 @@ const TodoList: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // Handler for saving the edited todo using RTK Query mutation
+  // Handler for saving the edited todo using mutation
   const handleSaveTodo = async () => {
     if (editingTodo) {
       try {
@@ -137,7 +135,7 @@ const TodoList: React.FC = () => {
     }
   };
 
-  // Pagination logic and filtering – similar to your existing implementation
+  // Pagination logic and filtering
   const totalTodos = todos.length;
   const totalPages = Math.ceil(totalTodos / todosPerPage);
   const indexOfLastTodo = currentPage * todosPerPage;

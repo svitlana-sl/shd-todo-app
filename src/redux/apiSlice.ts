@@ -1,6 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-// Define the Todo interface (same as before)
 export interface Todo {
   id: number;
   text: string;
@@ -9,7 +8,7 @@ export interface Todo {
   description?: string;
 }
 
-// Create an API slice with endpoints for todos
+// API slice with endpoints for todos
 export const todosApi = createApi({
   reducerPath: "todosApi",
   baseQuery: fetchBaseQuery({
@@ -57,7 +56,7 @@ export const todosApi = createApi({
   }),
 });
 
-// Export auto-generated hooks for each endpoint
+// Export hooks for each endpoint
 export const {
   useGetTodosQuery,
   useCreateTodoMutation,
