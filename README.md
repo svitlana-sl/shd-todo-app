@@ -1,54 +1,118 @@
-# React + TypeScript + Vite
+# ShadCN Todo List
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a Todo App built with React, TypeScript, Vite, and [ShadCN UI](https://ui.shadcn.com/). The project uses Redux Toolkit Query (RTK Query) for API calls and state management, and Tailwind CSS for styling.  
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Add, update, and delete todos** using RTK Query for efficient API integration.
+- **Filter todos** by category and status.
+- **Pagination** to navigate through todos.
+- Responsive UI built with ShadCN components and Tailwind CSS.
+- Theme toggle (dark/light mode) using Next Themes.
 
-## Expanding the ESLint configuration
+## Live Demo
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The app is deployed at: [shadcn-todo-app.surge.sh](https://shadcn-todo-app.surge.sh)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14+)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/shadcn_todo_list.git
+   cd shadcn_todo_list
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+### Running the App
+
+To start the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The app will be available at [http://localhost:3000](http://localhost:3000) (or the port provided by Vite).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Building for Production
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+To build the project for production:
+
+```bash
+npm run build
+# or
+yarn build
 ```
+
+To preview the production build:
+
+```bash
+npm run preview
+# or
+yarn preview
+```
+
+### JSON Server (Optional)
+
+If you want to run a local JSON server for testing:
+
+```bash
+npm run db
+# or
+yarn db
+```
+
+This will start the JSON server on [http://localhost:5000](http://localhost:5000).
+
+## Project Structure
+
+```
+├── src
+│   ├── components      # UI components (TodoList, Layout, shadcn UI pieces)
+│   ├── lib             # Utility functions (e.g. cn wrapper for Tailwind Merge)
+│   ├── redux           # Redux store and RTK Query API slice configuration
+│   ├── styles.css      # Global styles (Tailwind)
+│   ├── App.tsx         # Entry component wrapping Layout and TodoList
+│   └── main.tsx        # App bootstrapping
+├── db.json             # JSON server mock data for todos and categories
+├── package.json        # Project config and dependencies
+├── tsconfig.json       # TypeScript configuration
+└── vite.config.ts      # Vite configuration
+```
+
+## Technologies Used
+
+- **React** – JavaScript library for building user interfaces.
+- **TypeScript** – Typed superset of JavaScript.
+- **Vite** – Next Generation frontend tooling.
+- **Redux Toolkit Query (RTK Query)** – For data fetching and caching.
+- **Tailwind CSS** – Utility-first CSS framework.
+- **ShadCN UI** – Beautiful and customizable UI components.
+- **JSON Server** – Mock backend for quick API testing.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a pull request or open an issue for any bugs or feature requests.
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+
+
